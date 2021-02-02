@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>学术交流信息</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/jquery-easyui-1.7.0/themes/gray/easyui.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/jquery-easyui-1.7.0/themes/icon.css}">
+    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/jquery.easyui.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/locale/easyui-lang-zh_CN.js}"></script>
+    <!--    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/jquery.serializejson.min.js}"></script>-->
+</head>
+<body>
+<!--<div class="easyui-dialog" title="用户信息" id="dialog" style="width:400px;height: 600px"-->
+<!--     data-options="closed:true,top:40,-->
+<!--             buttons:[-->
+<!--                {text:'保存',handler:saveDialog},-->
+<!--                {text:'取消',handler:cancelDialog}]">-->
+<!--</div>-->
+<div id="toolbars">
+    <!--    <shiro:hashRole name = "admin1">-->
+    <!--        <a href="#" id="addTool" class="easyui-linkbutton" data-options="iconCls:'icon-add',onClick:addFunc">添加</a>-->
+    <!--    </shiro:hashRole>-->
+    <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="addFunc()">填报</a>
+<!--    <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit'" onclick="editFunc()">修改</a>-->
+<!--    <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove'" onclick="delFunc()">删除</a>-->
+    <div id="search">
+        <label> 姓名：</label>
+        <input type="text" id="stuName" name="stuName">
+
+        <label> 学号：</label>
+        <input type="text" id="stuNo" name="stuNo">
+
+        <label> 证件号：</label>
+        <input type="text" id="idno" name="idno">
+
+        <label>性别：</label>
+        <select type="text" id="sex" name="sex" style="width: 150px"></select>
+
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="search()">搜索</a>
+        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-clear'" onclick="clear()">清空</a>
+    </div>
+</div>
+<table id="data_dg" class="easyui-datagrid" style="width:100%;height:450px">
+    <thead>
+    <tr>
+        <th data-options="field:'activityassessmentId',checkbox: true"></th>
+        <th data-options="field:'activityName',align:'center'">学术交流名</th>
+        <th data-options="field:'studentName',align:'center'">学生名</th>
+        <th data-options="field:'activityassessmentName',align:'center'">报告中英文名称</th>
+        <th data-options="field:'photograph',align:'center'">参会证明图片</th>
+        <th data-options="field:'comment',align:'center'">备注</th>
+    </tr>
+    </thead>
+</table>
+<div id="edit_dialog" class="easyui-dialog" title="新建（编辑）项目信息" style="width:380px; height: 400px;"
+     data-options="closed: true,modal:true">
+    <div>
+        <!--class="table-form-post"-->
+        <form id="editForm">
+            <div style="overflow: auto; padding: 2px;">
+                <a href="#" class="easyui-linkbutton" onclick="save()" data-options="iconCls:'icon-save', plain:true"
+                   id="save">保存</a>
+            </div>
+            <table>
+                <tr>
+                    <td>项目名称:</td>
+                    <td>
+                        <input type="hidden" name="projectId" id="projectId"/>
+                        <input id="projectName_input" name="projectName" style="width:200px" class="easyui-textbox"
+                               data-options="required:true"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>项目类型:</td>
+                    <td><input id="projectType_input" name="projectType" style="width:200px" class="easyui-combobox"
+                               data-options="required:true"/></td>
+                </tr>
+                <tr>
+                    <td>参与项目时间:</td>
+                    <td><input id="projectStart_input" name="projectStart" style="width:200px"
+                               class="easyui-datetimebox"
+                               data-options="required:true"/></td>
+                </tr>
+                <tr>
+                    <td>结束项目时间:</td>
+                    <td><input id="projectEnd_input" name="projectEnd" style="width:200px" class="easyui-datetimebox"
+                               data-options="required:true"/></td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+
+    $(function () {
+        bandCombobox();
+        $("#data_dg").datagrid({
+            method: 'POST',
+            url: "/activity/getActivityassessmentListByPage",
+            fit: true,
+            singleSelect: true,
+            toolbar: "#toolbars",
+            pagination: true,
+            pageSize: 50,
+            pageList: [10, 20, 50, 100, 200],
+
+        });
+    })
+
+    function bandCombobox() {
+        $('#projectType_input').combobox({
+            url: '/dict/30',
+            valueField: 'value',
+            textField: 'text'
+        })
+    }
+
+    //添加
+    function addFunc() {
+        $('#edit_dialog').dialog("open");
+    }
+
+    function editFunc() {
+        var row = $('#data_dg').datagrid('getChecked');
+        if (row == null || row == undefined || row.length > 1 || row.length == 0) {
+            $.messager.alert('提示', '请选择一条数据进行编辑', 'warning');
+            return ;
+        }
+
+        $('#editForm').form('clear');
+
+        $('#projectId').val(row[0].projectId)
+        $('#projectName_input').textbox('setValue',row[0].projectName);
+        $('#projectType_input').combobox('setValue',row[0].projectType);
+        $('#projectStart_input').datetimebox('setValue',row[0].projectStart);
+        $('#projectEnd_input').datetimebox('setValue',row[0].projectEnd);
+
+        $('#edit_dialog').dialog("open");
+    }
+
+    function save() {
+        var data = {
+            projectId: $('#projectId').val(),
+            projectName: $('#projectName_input').textbox("getValue"),
+            projectType: $('#projectType_input').combobox("getValue"),
+            projectStart: $('#projectStart_input').datetimebox("getValue"),
+            projectEnd: $('#projectEnd_input').datetimebox("getValue"),
+        }
+
+
+        console.log(JSON.stringify(data))
+        console.log(data.activityId);
+        var url = "/project/addProject";
+        if (data.projectId != undefined && data.projectId != "") {
+            url = "/project/updateProject";
+        }
+
+
+        $.ajax({
+            type: "post",
+            url: url,
+            //将json对象转化为json字符串
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dateType: "json",
+            success: function (data) {
+                console.log(JSON.stringify(data))
+                $.messager.alert("提示", data.msg)
+                if (data.code == "000000") {
+                    $('#edit_dialog').dialog("close");
+                }
+                $("#data_dg").datagrid("reload");
+            }
+        })
+    }
+
+
+
+
+
+</script>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oriri.mapper.UserMapper">
+    <select id="getUserList" resultType="com.oriri.vo.UserListVO">
+        select
+        main.user_id,
+        main.user_name,
+        main.password,
+        main.role,
+        dict.value as type
+        from sys_user main
+        left join sys_dict dict on dict.key=main.role
+        where 1= 1
+        <if test="dto.userId !=null">
+            and main.user_id = #{dto.userId}
+        </if>
+        <if test="dto.userName !=null">
+            and main.user_name = #{dto.userName}
+        </if>
+        <if test="dto.role !=null">
+            and main.role = #{dto.role}
+        </if>
+       order by main.user_name
+    </select>
+    <select id="getStudentList" resultType="com.oriri.vo.StudentListVO">
+        select
+        main.student_id,
+        main.student_name,
+        main.teacher_id,
+        main.user_id,
+        main.subject_id,
+        teacher.user_name as teacherName,
+        subject.subject_name as subjectName
+        from sys_student main
+        left join sys_user teacher on main.teacher_id = teacher.user_id
+        left join sys_subject subject on main.subject_id = subject.subject_id
+        where 1= 1
+<!--        <if test="dto.subjectId !=null">-->
+<!--            and main.subject_id = #{dto.subjectId}-->
+<!--        </if>-->
+<!--        <if test="dto.subjectName !=null">-->
+<!--            and main.subject_name = #{dto.subjectName}-->
+<!--        </if>-->
+        order by main.student_name
+    </select>
+
+
+    <select id="getTeacherList" resultType="com.oriri.vo.TeacherListVO">
+        select
+        main.teacher_id,
+        main.teacher_name,
+        main.subject_id,
+        main.user_id,
+        subject.subject_name as subjectName,
+        main.teacher_role,
+        dict.value as roleName
+        from sys_teacher main
+        left join sys_subject subject on main.subject_id = subject.subject_id
+        left join sys_dict dict on main.teacher_role = dict.key
+        where 1= 1
+        <!--        <if test="dto.subjectId !=null">-->
+        <!--            and main.subject_id = #{dto.subjectId}-->
+        <!--        </if>-->
+        <!--        <if test="dto.subjectName !=null">-->
+        <!--            and main.subject_name = #{dto.subjectName}-->
+        <!--        </if>-->
+        order by main.teacher_name
+    </select>
+
+    <select id="getStudentCombobox" resultType="com.oriri.vo.ComboboxVO">
+        select
+        main.student_id as value ,
+        main.student_name as text
+        from sys_student main
+        where 1= 1
+        order by main.student_name
+    </select>
+</mapper>

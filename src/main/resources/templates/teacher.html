@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户信息</title>
+    <!--    <link rel="stylesheet" type="text/css" href="/jquery-easyui-1.7.0/themes/black/easyui.css">-->
+    <!--    <link rel="stylesheet" type="text/css" href="/jquery-easyui-1.7.0/themes/icon.css">-->
+    <!--    <script type="text/javascript" src="/jquery-easyui-1.7.0/jquery.min.js"></script>-->
+    <!--    <script type="text/javascript" src="/jquery-easyui-1.7.0/jquery.easyui.min.js"></script>-->
+    <link rel="stylesheet" type="text/css" th:href="@{/jquery-easyui-1.7.0/themes/gray/easyui.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/jquery-easyui-1.7.0/themes/icon.css}">
+    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/jquery.easyui.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/locale/easyui-lang-zh_CN.js}"></script>
+</head>
+<body>
+<div  class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center',split:true">
+        <div id="toolbars">
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit',onClick:editFunc">编辑</a>
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove',onClick:delFunc">删除</a>
+            <div id="search">
+                <label> 老师名：</label>
+                <input type="text" id="stuName" name="stuName">
+
+                <label> 学号：</label>
+                <input type="text" id="stuNo" name="stuNo">
+
+                <label> 证件号：</label>
+                <input type="text" id="idno" name="idno">
+
+                <label>性别：</label>
+                <select type="text" id="sex" name="sex" style="width: 150px"></select>
+
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search',onClick:search">搜索</a>
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-clear',onClick:clear">清空</a>
+            </div>
+        </div>
+        <table id="data_dg" class="easyui-datagrid" style="width:100%;height:450px"
+               data-options="method:'post',striped:true,pagination:true,
+           rownumbers:true,toolbar:'#toolbars',onLoadSuccess:onLoadSuccess">
+            <thead>
+            <tr>
+                <th data-options="field:'teacherId',checkbox: true"></th>
+                <th data-options="field:'teacherName',align:'center'">老师名</th>
+                <th data-options="field:'subjectName',align:'center'">专业学科</th>
+                <th data-options="field:'roleName',align:'center'">角色</th>
+
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+
+<div id="edit_dialog" class="easyui-dialog" title="编辑教师信息" style="width:380px; height: 400px;"
+     data-options="closed: true,modal:true">
+    <div>
+        <!--class="table-form-post"-->
+        <form id="editForm">
+            <div style="overflow: auto; padding: 2px;">
+                <a href="#" class="easyui-linkbutton" onclick="save()" data-options="iconCls:'icon-save', plain:true"
+                   id="save">保存</a>
+            </div>
+            <table>
+                <tr>
+                    <td>教师名:</td>
+                    <td>
+                        <input type="hidden" name="teacherId" id="teacherId"/>
+                        <input id="teacherName_input" name="teacherName" style="width:200px" class="easyui-textbox"
+                               data-options="required:true"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>专业学科:</td>
+                    <td><input id="subject_input"  name="subject" style="width:200px" class="easyui-combobox"
+                               data-options="required:true"/></td>
+                </tr>
+                <tr>
+                    <td>角色:</td>
+                    <td><input id="teacherRole_input" name="teacherRole" style="width:200px" class="easyui-combobox"
+                               data-options="required:true"/></td>
+                </tr>
+            </table>
+            <input type="hidden" value="" name="type" id="type"/>
+        </form>
+    </div>
+</div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+
+    $(function () {
+        bandCombobox();
+
+        $("#data_dg").datagrid({
+            method: 'POST',
+            url:"/getTeacherListByPage",
+            fit: true,
+            singleSelect: true,
+            toolbar: "#toolbars",
+            pagination: true,
+            pageSize: 50,
+            pageList: [10, 20, 50, 100, 200],
+
+        });
+
+
+
+    })
+
+    
+    
+    function bandCombobox() {
+        $('#subject_input').combobox({
+            url: '/subject/getSubjectCombobox',
+            valueField: 'value',
+            textField: 'text'
+        });
+
+
+        $('#teacherRole_input').combobox({
+            url: '/dict/20',
+            valueField: 'value',
+            textField: 'text'
+        })
+    }
+
+    function editFunc() {
+        var row = $('#data_dg').datagrid('getChecked');
+        if (row == null || row == undefined || row.length > 1 || row.length == 0) {
+            $.messager.alert('提示', '请选择一条数据进行编辑', 'warning');
+            return ;
+        }
+
+        $('#editForm').form('clear');
+        $('#teacherId').val(row[0].teacherId)
+        $('#teacherName_input').textbox('setValue',row[0].teacherName);
+        $('#subject_input').combobox('setValue',row[0].subjectId);
+        $('#teacherRole_input').combobox('setValue',row[0].teacherRole);
+
+        $('#edit_dialog').dialog("open");
+    }
+
+    // 保存
+    function save() {
+        var data = {
+            teacherId: $('#teacherId').val(),
+            teacherName:$('#teacherName_input').textbox('getValue'),
+            subjectId:$("#subject_input").combobox('getValue'),
+            roleId:$("#teacherRole_input").combobox('getValue')
+        }; //声明一个对象
+
+        console.log(JSON.stringify(data))
+        console.log(data.userId);
+        var url = "/user/updateTeacher";
+        // if(data.userId!=undefined&&data.userId!=""){
+        //     url = "/user/updateUser";
+        // }
+
+        $.ajax({
+            type: "post",
+            url: url,
+            //将json对象转化为json字符串
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dateType: "json",
+            success: function (data) {
+                console.log(JSON.stringify(data))
+                $.messager.alert("提示", data.msg)
+                if (data.code == "000000") {
+                    $('#edit_dialog').dialog("close");
+                }
+                $("#data_dg").datagrid("reload");
+            }
+        })
+    }
+
+
+
+
+    
+    
+    
+
+    var pos = new Array();
+    var btnOpr = ''; //转化对象
+    var flag = 'add'; //默认添加方法
+    //获得父标签的自定义属性
+    var iframe = window.top.document.getElementById('iframe');
+    var state = iframe.dataset.state;//读
+    if (state) {
+        var $dg = $("#query-datagrid");
+        $dg.datagrid({
+            "queryParams": {
+                stu_state: state
+            }
+        })
+        console.log(state)
+        if ('1' != state) {
+            $("#addTool").hide();
+        }
+    }
+    //绑定性别
+    $("#sex").combobox({
+        data: [{
+            "id": "",
+            "text": "---请选择---",
+            "selected": true
+        }, {
+            "id": "1",
+            "text": "男"
+        }, {
+            "id": "0",
+            "text": "女"
+        }],
+        valueField: 'id',
+        textField: 'text'
+    });
+
+
+    function onLoadSuccess() {
+        if (pos && pos.length > 0) {
+            for (var i = 0; i < pos.length; i++) {
+                $("#query-datagrid").datagrid("selectRow", pos[i]);
+            }
+            pos.length = 0;
+        }
+    }
+
+    function loadFilter(result) {
+        console.log(result)
+        return result;
+    }
+
+
+    function formatterOper(val, row, index) {
+        if (row.sex == '0') {
+            return '女'
+        }
+        if (row.sex == '1') {
+            return '男'
+        }
+    }
+
+
+    //添加
+    function addFunc() {
+        flag = 'add';
+        //$('#dialog').dialog({"href": "studentApply.html"});
+        $('#dialog').dialog("open");
+    }
+
+
+
+    function onLoadSuccess() {
+        if (pos && pos.length > 0) {
+            for (var i = 0; i < pos.length; i++) {
+                $("#query-datagrid").datagrid("selectRow", pos[i]);
+            }
+            pos.length = 0;
+        }
+    }
+
+    //删除
+    function delFunc(index) {
+        $("#query-datagrid").datagrid("selectRow", index);
+        var rows = $("#query-datagrid").datagrid("getSelections");
+        var ids = "";
+        if (rows && rows.length > 0) {
+            $.messager.confirm("提示", "你确定要删除嘛？", function (r) {
+                $.messager.progress();
+                if (r) {
+                    $.each(rows, function (i) {
+                        ids += rows[i].id;
+                        if (i < rows.length - 1) {
+                            ids += ",";
+                        }
+                    });
+                    $.ajax({
+                        type: "delete",
+                        url: "/student/" + ids,
+                        success: function (data) {
+                            $.messager.progress("close");
+                            $.messager.show({
+                                title: "成功",
+                                msg: '删除成功',
+                                showType: 'slide'
+                            })
+                            $("#query-datagrid").datagrid("reload");
+                        },
+                        error: function (e) {
+                            $.messager.progress("close");
+                            $.messager.show({
+                                title: "其他错误",
+                                msg: e,
+                                showType: 'slide'
+                            })
+                        }
+                    })
+                } else {
+                    $.messager.progress("close");
+                }
+            })
+        } else {
+            $.messager.alert("警告", "你还未选择目标")
+        }
+
+    }
+
+    //搜索
+    function search() {
+        $dg.datagrid({
+            "queryParams": {
+                sex: $("#sex").combobox("getValue"),
+                stuName: $("#stuName").val(),
+                stuNo: $("#stuNo").val(),
+                idno: $("#idno").val(),
+                stu_state: state
+            }
+        })
+    }
+
+    //清空
+    function clear() {
+        $("#sex").combobox("setValue", '');
+        $("#stuName").val('');
+        $("#stuNo").val('');
+        $("#idno").val('');
+    }
+
+    //保存
+    function saveDialog() {
+        var $applyForm = $("#applyForm")
+        var method;
+        $.messager.progress();
+        if ('add' == flag) {
+            method = 'post';
+        } else {
+            method = 'put';
+        }
+        $.ajax({
+            url: $applyForm.attr("action"),
+            // type:$applyForm.attr("method"),
+            type: method,
+            data: $applyForm.serialize(),
+            success: function (data) {
+                $.messager.progress("close");
+                $.messager.show({
+                    title: "成功",
+                    msg: '保存成功',
+                    showType: 'slide'
+                })
+                $("#query-datagrid").datagrid("reload");
+                cancelDialog();
+            },
+            error: function (e) {
+                $.messager.progress("close");
+                $applyForm.dialog("close");
+                $.messager.show({
+                    title: "出错了",
+                    msg: e,
+                    showType: 'slide'
+                })
+            }
+        })
+
+    }
+
+    function cancelDialog() {
+        $('#dialog').dialog("close");
+    }
+
+    function upper(val, row, index) {
+        var style = 'style="text-decoration:none;color:#FF7C30"';
+        var onclick = "";
+        if ('1' == state) {
+            btnOpr = '转为积极分子';
+            onclick = "upperFun(" + index + ")";
+        } else if ('2' == state) {
+            btnOpr = '转为发展对象';
+            onclick = "upperFun(" + index + ")";
+        } else if ('3' == state) {
+            btnOpr = '转为预备党员';
+            onclick = "upperFun(" + index + ")";
+        } else if ('4' == state) {
+            btnOpr = '转为正式党员';
+            onclick = "upperFun(" + index + ")";
+        }
+        //对数据在进行一次覆盖
+        console.log(row)
+
+        if ('1' == row.approve_state) {
+            btnOpr = '正在申请'
+            onclick = "upperFun(-1)";
+            style = 'style="color:red;text-decoration:none"';
+        }
+        if ('2' == row.approve_state) {
+            btnOpr = '已同意'
+            onclick = "upperFun(-1)";
+            style = 'style="color:#a8ff11;text-decoration:none"';
+        }
+        if ('3' == row.approve_state) {
+            btnOpr = '已拒绝'
+            onclick = "upperFun(-1)";
+            style = 'style="color:#a8ff11;text-decoration:none"';
+        }
+        return '<a href="#" class="easyui-linkbutton"' + style + ' rel="nofollow" onclick="' + onclick + '">' + btnOpr + '</a>';
+    }
+
+    function upperFun(index) {
+        console.log(index)
+        if (-1 == index) {
+            $.messager.alert("提示", "操作已经进行过，不能继续重复操作")
+        } else {
+
+            $.messager.confirm("提示", "你确定要申请吗？", function (r) {
+                if (r) {
+                    $("#query-datagrid").datagrid("selectRow", index);
+                    var row = $("#query-datagrid").datagrid("getSelections");
+                    if (row.length > 1) {
+                        $.messager.alert("警告", "不能同时选择多行");
+                    } else if (row.length == 1) {
+                        $.ajax({
+                            type: "put",
+                            url: "/student",
+                            data: {id: row[0].id, approve_state: 1},
+                            success: function (data) {
+                                $.messager.show({
+                                    title: "成功",
+                                    msg: '申请已经送达',
+                                    showType: 'slide'
+                                })
+                                $("#query-datagrid").datagrid("reload");
+                            },
+                            error: function (e) {
+                                $.messager.show({
+                                    title: "其他错误",
+                                    msg: e,
+                                    showType: 'slide'
+                                })
+                            }
+                        })
+                    } else {
+                        $.messager.alert("提示", "未选中目标");
+                    }
+                }
+            })
+        }
+    }
+
+</script>

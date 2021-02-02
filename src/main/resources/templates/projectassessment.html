@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户信息</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/jquery-easyui-1.7.0/themes/gray/easyui.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/jquery-easyui-1.7.0/themes/icon.css}">
+    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/jquery.easyui.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-easyui-1.7.0/locale/easyui-lang-zh_CN.js}"></script>
+</head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center',split:true">
+        <div id="toolbars">
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="addFunc()">项目填写</a>
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit'" onclick="editFunc()">项目编辑</a>
+<!--            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">删除</a>-->
+            <div id="search">
+                <label> 老师名：</label>
+                <input type="text" id="stuName" name="stuName">
+
+                <label> 学号：</label>
+                <input type="text" id="stuNo" name="stuNo">
+
+                <label> 证件号：</label>
+                <input type="text" id="idno" name="idno">
+
+                <label>性别：</label>
+                <select type="text" id="sex" name="sex" style="width: 150px"></select>
+
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">搜索</a>
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-clear'">清空</a>
+            </div>
+        </div>
+        <table id="data_dg" class="easyui-datagrid" style="width:100%;height:450px">
+            <thead>
+            <tr>
+                <th data-options="field:'projectassessmentId',checkbox: true"></th>
+                <th data-options="field:'projectName',align:'center'">项目名</th>
+                <th data-options="field:'studentName',align:'center'">学生名</th>
+                <th data-options="field:'stuWork',align:'center'">学生承担工作</th>
+                <th data-options="field:'expenditure',align:'center'">工作经费</th>
+                <th data-options="field:'stuSignature',align:'center'">负责人签字</th>
+                <th data-options="field:'teaSignature',align:'center'">教师签字</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div id="edit_dialog" class="easyui-dialog" title="编辑学术交流信息" style="width:380px; height: 400px;"
+     data-options="closed: true,modal:true">
+    <div>
+        <form id="editForm">
+            <div style="overflow: auto; padding: 2px;">
+                <a href="#" class="easyui-linkbutton" onclick="save()" data-options="iconCls:'icon-save', plain:true"
+                   id="save">保存</a>
+            </div>
+            <table>
+                <tr>
+                    <td>项目名称:</td>
+                    <td>
+                        <input type="hidden" name="projectassessmentId" id="projectassessmentId"/>
+                        <input id="project_input" name="project" style="width:200px" class="easyui-combobox"
+                               data-options="required:true"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>学生:</td>
+                    <td><input id="student_input" name="student" style="width:200px" class="easyui-combobox"
+                               data-options="required:true"/></td>
+                </tr>
+                <tr>
+                    <td>学生承担工作:</td>
+                    <td><input id="stuwork_input" name="stuwork" style="width:200px" class="easyui-textbox"
+                               data-options="required:true"/></td>
+                </tr>
+
+                <tr>
+                    <td>工作经费（万元）:</td>
+                    <td><input id="expenditure_input" name="expenditure" style="width:200px" class="easyui-textbox"
+                               data-options="required:true"/></td>
+                </tr>
+                <tr>
+                    <td>负责人签字:</td>
+                    <td><input id="stusignature_input" name="stusignature" style="width:200px" class="easyui-textbox"
+                               data-options="required:true"/></td>
+                </tr>
+                <tr>
+                    <td>指导教师签字:</td>
+                    <td><input id="teasignature_input" name="teasignature" style="width:200px" class="easyui-textbox"
+                               data-options="required:true"/></td>
+                </tr>
+
+            </table>
+        </form>
+    </div>
+</div>
+
+</body>
+<script type="text/javascript" th:inline="javascript">
+
+    $(function () {
+        bandCombobox();
+
+        $("#data_dg").datagrid({
+            method: 'POST',
+            url: "/project/getProjectassessmentListPage",
+            fit: true,
+            singleSelect: true,
+            toolbar: "#toolbars",
+            pagination: true,
+            pageSize: 50,
+            pageList: [10, 20, 50, 100, 200],
+
+        });
+
+
+    })
+
+
+    function bandCombobox() {
+        $('#project_input').combobox({
+            url: '/project/getProjectCombobox',
+            valueField: 'value',
+            textField: 'text'
+        });
+
+
+        $('#student_input').combobox({
+            url: '/user/getStudentCombobox',
+            valueField: 'value',
+            textField: 'text'
+        })
+    }
+
+    function addFunc() {
+        $('#editForm').form('clear');
+        $('#edit_dialog').dialog("open");
+    }
+
+    function save() {
+        var data = {
+            projectassessmentId: $('#projectassessmentId').val(),
+            projectId: $('#project_input').combobox("getValue"),
+            studentId: $('#student_input').combobox("getValue"),
+            stuWork: $('#stuwork_input').textbox("getValue"),
+            expenditure: $('#expenditure_input').textbox("getValue"),
+            stuSignature: $('#stusignature_input').textbox("getValue"),
+            teaSignature: $('#teasignature_input').textbox("getValue"),
+        }
+
+
+        console.log(JSON.stringify(data))
+        var url = "/project/addProjectassessment";
+        if (data.projectassessmentId != undefined && data.projectassessmentId != "") {
+            url = "/project/updateProjectassessment";
+        }
+
+
+        $.ajax({
+            type: "post",
+            url: url,
+            //将json对象转化为json字符串
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dateType: "json",
+            success: function (data) {
+                console.log(JSON.stringify(data))
+                $.messager.alert("提示", data.msg)
+                if (data.code == "000000") {
+                    $('#edit_dialog').dialog("close");
+                }
+                $("#data_dg").datagrid("reload");
+            }
+        })
+    }
+
+    function editFunc() {
+        var row = $('#data_dg').datagrid('getChecked');
+        if (row == null || row == undefined || row.length > 1 || row.length == 0) {
+            $.messager.alert('提示', '请选择一条数据进行编辑', 'warning');
+            return;
+        }
+        $('#editForm').form('clear');
+
+        $('#projectassessmentId').val(row[0].projectassessmentId)
+        $('#project_input').combobox('setValue',row[0].projectId);
+        $('#student_input').combobox('setValue',row[0].studentId);
+        $('#stuwork_input').textbox('setValue',row[0].stuWork);
+        $('#expenditure_input').textbox('setValue',row[0].expenditure);
+        $('#stusignature_input').textbox('setValue',row[0].stuSignature);
+        $('#teasignature_input').textbox('setValue',row[0].teaSignature);
+
+
+        $('#edit_dialog').dialog("open");
+
+    }
+
+
+
+    function applyFunc() {
+        var row = $('#data_dg').datagrid('getChecked');
+        if (row == null || row == undefined || row.length > 1 || row.length == 0) {
+            $.messager.alert('提示', '请选择一条数据进行编辑', 'warning');
+            return;
+        }
+
+        var data = {
+            courseId: row[0].courseId
+        }
+        var url = "/assistantApply/addAssistantApply";
+        $.ajax({
+            type: "post",
+            url: url,
+            //将json对象转化为json字符串
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dateType: "json",
+            success: function (data) {
+                console.log(JSON.stringify(data))
+                $.messager.alert("提示", data.msg)
+                if (data.code == "000000") {
+                    $('#edit_dialog').dialog("close");
+                }
+                $("#data_dg").datagrid("reload");
+            }
+        })
+    }
+
+    function applyListFunc() {
+        $("#applyList_dg").datagrid({
+            method: 'POST',
+            url: "/assistantApply/getApplyListByPage",
+            fit: true,
+            singleSelect: true,
+            toolbar: "#apply_toolBar",
+            pagination: true,
+            pageSize: 50,
+            pageList: [10, 20, 50, 100, 200],
+
+        });
+
+        $('#apply_dialog').dialog("open");
+    }
+
+    // 同意申请助教
+    function applyAgree() {
+        var row = $('#applyList_dg').datagrid('getChecked');
+        if (row == null || row == undefined || row.length > 1 || row.length == 0) {
+            $.messager.alert('提示', '请选择一条数据进行编辑', 'warning');
+            return;
+        }
+        console.log(JSON.stringify(row[0]))
+
+        var data = {
+            assistantapplicationId: row[0].assistantapplicationId,
+            courseId: row[0].courseId,
+            studentId: row[0].studentId
+        }
+        console.log(JSON.stringify(data))
+        var url = "/assistantApply/agreeApply";
+        $.ajax({
+            type: "post",
+            url: url,
+            //将json对象转化为json字符串
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dateType: "json",
+            success: function (data) {
+                console.log(JSON.stringify(data))
+                $.messager.alert("提示", data.msg)
+                if (data.code == "000000") {
+                    //$('#edit_dialog').dialog("close");
+                }
+                $("#applyList_dg").datagrid("reload");
+                $("#data_dg").datagrid("reload");
+            }
+        })
+    }
+
+
+</script>

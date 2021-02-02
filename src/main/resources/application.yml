@@ -1,0 +1,26 @@
+server:
+  port: 8686
+  servlet:
+    session:
+      timeout: 600 # session超时时间为600秒
+
+spring:
+  application:
+    name: student-demo
+  datasource:
+    url: jdbc:mysql://120.27.60.49:3306/oriri123?serverTimezone=UTC&useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: kite0806
+  #thymeleaf模板配置
+  thymeleaf:
+    cache: false
+    suffix: .html
+    mode: HTML
+    prefix: classpath:/templates/
+    servlet:
+      content-type: text/html
+
+
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml

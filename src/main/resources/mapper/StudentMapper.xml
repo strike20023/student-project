@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oriri.mapper.StudentMapper">
+<!--    <select id="getStudentCombobox" resultType="com.oriri.vo.ComboboxVO">-->
+<!--        select-->
+<!--        select-->
+<!--        main.student_id as value ,-->
+<!--        main.student_name as text-->
+<!--        from sys_student main-->
+<!--        where 1= 1-->
+<!--        order by main.student_name-->
+<!--    </select>-->
+
+
+</mapper>

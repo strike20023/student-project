@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oriri.mapper.ProjectMapper">
+    <select id="getProjectList" resultType="com.oriri.vo.ProjectListVO">
+        select
+        main.project_id,
+        main.project_name,
+        main.project_type,
+        main.project_start,
+        main.project_end,
+        dict.value as projectTypeName
+        from sys_project main
+        left join sys_dict dict on dict.key = main.project_type
+        where 1= 1
+<!--        <if test="dto.activityId !=null">-->
+<!--            and main.activity_id = #{dto.activityId}-->
+<!--        </if>-->
+<!--        <if test="dto.activityName !=null">-->
+<!--            and main.activity_name = #{dto.activityName}-->
+<!--        </if>-->
+<!--        <if test="dto.activityLocation !=null">-->
+<!--            and main.activity_location = #{dto.activityLocation}-->
+<!--        </if>-->
+<!--        <if test="dto.activityDate !=null">-->
+<!--            and main.activity_date = #{dto.activityDate}-->
+<!--        </if>-->
+        order by main.project_name
+    </select>
+
+    <select id="getProjectassessmentList" resultType="com.oriri.vo.ProjectassessmentListVO">
+        select
+        main.projectassessment_id,
+        main.project_id,
+        main.student_id,
+        main.stu_work,
+        main.expenditure,
+        main.stu_signature,
+        main.tea_signature,
+        project.project_name,
+        project.project_type,
+        student.student_name,
+        dict.value as projectTypeName
+        from sys_projectassessment main
+        left join sys_project project on project.project_id = main.project_id
+        left join sys_dict dict on dict.key = project.project_type
+        left join sys_student student on student.student_id = main.student_id
+        where 1= 1
+        <!--        <if test="dto.activityId !=null">-->
+        <!--            and main.activity_id = #{dto.activityId}-->
+        <!--        </if>-->
+        <!--        <if test="dto.activityName !=null">-->
+        <!--            and main.activity_name = #{dto.activityName}-->
+        <!--        </if>-->
+        <!--        <if test="dto.activityLocation !=null">-->
+        <!--            and main.activity_location = #{dto.activityLocation}-->
+        <!--        </if>-->
+        <!--        <if test="dto.activityDate !=null">-->
+        <!--            and main.activity_date = #{dto.activityDate}-->
+        <!--        </if>-->
+        order by project.project_name
+    </select>
+
+
+
+    <select id="getProjectCombobox" resultType="com.oriri.vo.ComboboxVO">
+        select
+        main.project_id as value,
+        main.project_name as text
+        from sys_project main
+        where 1= 1
+        <!--        <if test="dto.activityId !=null">-->
+        <!--            and main.activity_id = #{dto.activityId}-->
+        <!--        </if>-->
+        <!--        <if test="dto.activityName !=null">-->
+        <!--            and main.activity_name = #{dto.activityName}-->
+        <!--        </if>-->
+        <!--        <if test="dto.activityLocation !=null">-->
+        <!--            and main.activity_location = #{dto.activityLocation}-->
+        <!--        </if>-->
+        <!--        <if test="dto.activityDate !=null">-->
+        <!--            and main.activity_date = #{dto.activityDate}-->
+        <!--        </if>-->
+        order by main.project_name
+    </select>
+</mapper>

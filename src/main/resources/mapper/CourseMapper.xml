@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oriri.mapper.CourseMapper">
+    <select id="getCourseList" resultType="com.oriri.vo.CourseListVO">
+        select
+        main.course_id,
+        main.course_name,
+        main.student_num,
+        main.course_type,
+        main.student_type
+        from sys_course main
+        where 1= 1
+        <if test="dto.courseId !=null">
+            and main.course_id = #{dto.courseId}
+        </if>
+        <if test="dto.courseName !=null">
+            and main.course_name = #{dto.courseName}
+        </if>
+        <if test="dto.studentNum !=null">
+            and main.student_num = #{dto.studentNum}
+        </if>
+        <if test="dto.courseType !=null">
+            and main.course_type = #{dto.courseType}
+        </if>
+        <if test="dto.studentType !=null">
+            and main.student_type = #{dto.studentType}
+        </if>
+        order by main.course_name
+    </select>
+
+</mapper>
